@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "620944579723",
+    "project_id": "myapplication-907d9",
+    "storage_bucket": "myapplication-907d9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:620944579723:android:4fee10ff59be5607d9c88e",
+        "android_client_info": {
+          "package_name": "com.ufersa.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMpod5XhqvsVhzojbQP4in56WZc85xASA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
