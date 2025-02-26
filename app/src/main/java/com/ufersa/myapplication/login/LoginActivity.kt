@@ -40,20 +40,14 @@ class LoginActivity : AppCompatActivity() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    // Login bem-sucedido
-                    // Exibe uma mensagem de sucesso
                     Toast.makeText(baseContext, "Login realizado com sucesso.", Toast.LENGTH_SHORT).show()
 
-                    // Cria uma Intent para iniciar a HomePagePost
                     val intent = Intent(this, HomePagePost::class.java)
 
-                    // Inicia a HomePagePost
                     startActivity(intent)
 
-                    // Finaliza a LoginActivity para que o usuário não possa voltar para ela com o botão "voltar"
                     finish()
                 } else {
-                    // Falha no login
                     Toast.makeText(baseContext, "Falha no login.", Toast.LENGTH_SHORT).show()
                 }
             }

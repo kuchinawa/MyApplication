@@ -1,5 +1,6 @@
 package com.ufersa.myapplication.cadastro
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -15,6 +16,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import com.ufersa.myapplication.databinding.ActivityCadastroBinding
+import com.ufersa.myapplication.post.HomePagePost
 import com.ufersa.myapplication.utils.ImagemUtils
 
 class CadastroActivity : AppCompatActivity() {
@@ -25,6 +27,7 @@ class CadastroActivity : AppCompatActivity() {
     private lateinit var firestore: FirebaseFirestore
     private var originalImageUri: Uri? = null
     private var processedImageUri: Uri? = null
+    private var isRegistering = false
 
     private val selectImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -43,39 +46,52 @@ class CadastroActivity : AppCompatActivity() {
         storageRef = Firebase.storage.reference
         firestore = Firebase.firestore
 
-        // Set click listener for image selection button
         binding.buttonAddPhoto.setOnClickListener {
             selectImageLauncher.launch("image/*")
         }
 
         binding.buttonCadastrar.setOnClickListener {
-            val email = binding.editTextEmail.text.toString()
-            val password = binding.editTextSenha.text.toString()
-            val name = binding.editTextNome.text.toString() // Get the name
+            if (!isRegistering) {
+                isRegistering = true
+                binding.buttonCadastrar.isEnabled = false
+                binding.buttonCadastrar.text = "Cadastrando..."
 
-            if (email.isNotEmpty() && password.isNotEmpty() && name.isNotEmpty()) {
-                auth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this) { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(
-                                baseContext, "Cadastro realizado com sucesso.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            // You can now proceed to upload the image (if selected)
-                            // and store user data (name, etc.) in a database
-                            uploadImageToStorage(name)
-                        } else {
-                            Toast.makeText(
-                                baseContext, "Falha no cadastro.",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                val email = binding.editTextEmail.text.toString()
+                val password = binding.editTextSenha.text.toString()
+                val name = binding.editTextNome.text.toString()
+
+                if (email.isNotEmpty() && password.isNotEmpty() && name.isNotEmpty()) {
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(this) { task ->
+                            if (task.isSuccessful) {
+                                Toast.makeText(
+                                    baseContext, "Cadastro realizado com sucesso.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                uploadImageToStorage(name)
+                                val intent = Intent(this, HomePagePost::class.java)
+                                startActivity(intent)
+                                finish()
+                            } else {
+                                Toast.makeText(
+                                    baseContext, "Falha no cadastro.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                clearFields()
+                            }
+                            isRegistering = false
+                            binding.buttonCadastrar.isEnabled = true
+                            binding.buttonCadastrar.text = "Cadastrar"
                         }
-                    }
-            } else {
-                Toast.makeText(
-                    baseContext, "Preencha todos os campos.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                } else {
+                    Toast.makeText(
+                        baseContext, "Preencha todos os campos.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    isRegistering = false
+                    binding.buttonCadastrar.isEnabled = true
+                    binding.buttonCadastrar.text = "Cadastrar"
+                }
             }
         }
     }
@@ -95,38 +111,31 @@ class CadastroActivity : AppCompatActivity() {
 
     private fun uploadImageToStorage(name: String) {
         processedImageUri?.let { imageUri ->
-            val userId = auth.currentUser?.uid ?: return // Get the user ID or return if null
+            val userId = auth.currentUser?.uid ?: return
 
-            val imageRef = storageRef.child("profile_images/$userId.jpg") // Create a reference to the image
-
+            val imageRef = storageRef.child("profile_images/$userId.jpg")
             val uploadTask = imageRef.putFile(imageUri)
 
             uploadTask.addOnSuccessListener {
-                // Image uploaded successfully
                 Log.d("CadastroActivity", "Image uploaded successfully")
 
-                // Get the download URL
                 imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
                     val imageUrl = downloadUri.toString()
                     Log.d("CadastroActivity", "Image URL: $imageUrl")
-                    // Now you can save the user data and the image URL to Firestore
                     saveUserDataToFirestore(name, imageUrl)
                 }.addOnFailureListener {
-                    // Handle any errors
                     Log.e("CadastroActivity", "Error getting image URL: ${it.message}")
                 }
             }.addOnFailureListener {
-                // Handle unsuccessful uploads
                 Log.e("CadastroActivity", "Error uploading image: ${it.message}")
             }
         } ?: run {
-            // No image selected, save user data without image URL
             saveUserDataToFirestore(name, null)
         }
     }
 
     private fun saveUserDataToFirestore(name: String, imageUrl: String?) {
-        val userId = auth.currentUser?.uid ?: return // Get the user ID or return if null
+        val userId = auth.currentUser?.uid ?: return
 
         val userData = hashMapOf(
             "name" to name,
@@ -142,5 +151,11 @@ class CadastroActivity : AppCompatActivity() {
             .addOnFailureListener { e ->
                 Log.e("CadastroActivity", "Error saving user data: ${e.message}")
             }
+    }
+
+    private fun clearFields() {
+        binding.editTextEmail.text.clear()
+        binding.editTextSenha.text.clear()
+        binding.editTextNome.text.clear()
     }
 }

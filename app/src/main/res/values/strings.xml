@@ -15,4 +15,5 @@
     <string name="faca_upload_da_imagem_aqui">Faça o upload da imagem aqui</string>
     <string name="create_post" />
     <string name="add_image">adicionar_imagem</string>
+    <string name="logout">Logout</string>
 </resources>

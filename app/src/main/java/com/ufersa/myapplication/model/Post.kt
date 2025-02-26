@@ -9,5 +9,5 @@ data class Post(
     val description: String? = null,
     val timestamp: Timestamp? = null,
     val title: String? = null,
-    val profileImageUrl: String? = null // Adicionado aqui
+    val profileImageUrl: String? = null
 )

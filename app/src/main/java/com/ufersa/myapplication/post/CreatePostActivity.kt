@@ -48,12 +48,10 @@ class CreatePostActivity : AppCompatActivity() {
         binding = ActivityCreatePostBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize Firebase components
         firestore = Firebase.firestore
         storageRef = Firebase.storage.reference
         auth = Firebase.auth
 
-        // Setup Toolbar
         val toolbar: Toolbar = binding.toolbar
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -66,7 +64,19 @@ class CreatePostActivity : AppCompatActivity() {
         }
 
         binding.buttonCreatePost.setOnClickListener {
-            createPost()
+            binding.buttonCreatePost.isEnabled = false
+            binding.buttonCreatePost.text = "Publicando..."
+
+            createPost { success ->
+                binding.buttonCreatePost.isEnabled = true
+                binding.buttonCreatePost.text = "Publicar"
+
+                if (success) {
+                    finish()
+                } else {
+                    Toast.makeText(this, "Falha ao publicar", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
         getUserProfileImageUrl()
     }
@@ -165,7 +175,7 @@ class CreatePostActivity : AppCompatActivity() {
         }
     }
 
-    private fun createPost() {
+    private fun createPost(callback: (Boolean) -> Unit) {
         val description = binding.editTextDescription.text.toString()
 
         if (description.isEmpty() || processedImageUri == null) {
@@ -174,11 +184,12 @@ class CreatePostActivity : AppCompatActivity() {
                 "Preencha todos os campos e selecione uma imagem",
                 Toast.LENGTH_SHORT
             ).show()
+            callback(false)
             return
         }
 
         val user = auth.currentUser
-        val userId = user?.uid ?: return // Get the user ID or return if null
+        val userId = user?.uid ?: return
         val userName = user.displayName ?: user.email ?: "Usuário"
         val timestamp = Timestamp.now()
         val imageName = "$userId-${timestamp.seconds}.jpg"
@@ -200,30 +211,20 @@ class CreatePostActivity : AppCompatActivity() {
                         firestore.collection("posts")
                             .add(post)
                             .addOnSuccessListener {
-                                Toast.makeText(
-                                    this,
-                                    "Post criado com sucesso",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                finish()
+                                Toast.makeText(this, "Publicação criada com sucesso!", Toast.LENGTH_SHORT).show()
+                                callback(true)
                             }
                             .addOnFailureListener { e ->
-                                Log.e("CreatePostActivity", "Erro ao criar post: ${e.message}")
-                                Toast.makeText(
-                                    this,
-                                    "Erro ao criar post",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                Log.e("CreatePostActivity", "Erro ao adicionar publicação: ${e.message}")
+                                callback(false)
                             }
+                    }.addOnFailureListener { e ->
+                        Log.e("CreatePostActivity", "Erro ao obter URL da imagem: ${e.message}")
+                        callback(false)
                     }
-                }
-                .addOnFailureListener { e ->
+                }.addOnFailureListener { e ->
                     Log.e("CreatePostActivity", "Erro ao fazer upload da imagem: ${e.message}")
-                    Toast.makeText(
-                        this,
-                        "Erro ao fazer upload da imagem",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    callback(false)
                 }
         }
     }
