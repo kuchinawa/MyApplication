@@ -7,4 +7,12 @@
     <string name="entrar">Entrar</string>
     <string name="ainda_n_o_membro">Ainda não é membro?</string>
     <string name="cadastre_se">Cadastre-se</string>
+    <string name="t_tulo">Título</string>
+    <string name="descricao">Descrição</string>
+    <string name="selecionar_imagem">Selecionar Imagem</string>
+    <string name="criar_post">Criar Post</string>
+    <string name="titulo">Titulo</string>
+    <string name="faca_upload_da_imagem_aqui">Faça o upload da imagem aqui</string>
+    <string name="create_post" />
+    <string name="add_image">adicionar_imagem</string>
 </resources>

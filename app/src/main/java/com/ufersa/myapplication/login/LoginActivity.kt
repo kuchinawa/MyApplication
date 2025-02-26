@@ -10,6 +10,7 @@ import com.ufersa.myapplication.databinding.ActivityLoginBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.ufersa.myapplication.post.HomePagePost
 
 class LoginActivity : AppCompatActivity() {
 
@@ -21,7 +22,6 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize Firebase Auth
         auth = Firebase.auth
 
         binding.buttonLogin.setOnClickListener {
@@ -40,14 +40,21 @@ class LoginActivity : AppCompatActivity() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
-                    val user = auth.currentUser
-                    Toast.makeText(baseContext, "Login realizado com sucesso.",
-                        Toast.LENGTH_SHORT).show()
+                    // Login bem-sucedido
+                    // Exibe uma mensagem de sucesso
+                    Toast.makeText(baseContext, "Login realizado com sucesso.", Toast.LENGTH_SHORT).show()
+
+                    // Cria uma Intent para iniciar a HomePagePost
+                    val intent = Intent(this, HomePagePost::class.java)
+
+                    // Inicia a HomePagePost
+                    startActivity(intent)
+
+                    // Finaliza a LoginActivity para que o usuário não possa voltar para ela com o botão "voltar"
+                    finish()
                 } else {
-                    // If sign in fails, display a message to the user.
-                    Toast.makeText(baseContext, "Falha no login.",
-                        Toast.LENGTH_SHORT).show()
+                    // Falha no login
+                    Toast.makeText(baseContext, "Falha no login.", Toast.LENGTH_SHORT).show()
                 }
             }
     }
